@@ -1,0 +1,14 @@
+# .gitignore --- Configures files to ignore from this Git repository.
+
+# --------------------
+# Generated Files
+# --------------------
+*.elc
+
+
+# --------------------
+# Misc.
+# --------------------
+.DS_Store
+.dir-locals.el
+*~
