@@ -12,6 +12,11 @@ with the following layout:
             └── ...
 
 
+## Installation
+
+    M-x package-install-file <path to org-standup.el>
+
+
 ## Configuration
 
 ### Daily Standup Template

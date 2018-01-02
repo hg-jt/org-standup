@@ -3,7 +3,7 @@
 ;; Copyright (C) 2017 hg-jt
 
 ;; Author: hg-jt <hg-jt@users.noreply.github.com>
-;; Version: 0.1
+;; Version: 0.2
 
 ;; This file is not part of GNU Emacs.
 
@@ -83,20 +83,21 @@ This value will be passed to `format-time-string'."
 This function will attempt to extract date information from the
 full path of the current file. If it is unable to extract the
 date information, it will default to the current date."
-  (if (string-match
-       (format  ; match the full path: ~/daily-standup/2017/08/21.org
-        "^%s/\\([0-9]\\{4\\}\\)/\\([0-9]\\{2\\}\\)/\\([0-9]\\{2\\}\\).org"
-        (expand-file-name org-standup-dir))
-       (buffer-file-name))
-      (let ((year (match-string 1 (buffer-file-name)))
-            (month (match-string 2 (buffer-file-name)))
-            (day (match-string 3 (buffer-file-name))))
-        (format-time-string org-standup-title-format
-                            (apply 'encode-time
-                                   (parse-time-string
-                                    ; include time to ease time encoding
-                                    (format "%s-%s-%s 00:00" year month day)))))
-    (format-time-string org-standup-title-format)) )
+  (let ((file-name (buffer-file-name)))
+    (if (string-match
+         (format  ; match the full path: ~/daily-standup/2017/08/21.org
+          "^%s/\\([0-9]\\{4\\}\\)/\\([0-9]\\{2\\}\\)/\\([0-9]\\{2\\}\\).org"
+          (expand-file-name org-standup-dir))
+         file-name)
+        (let ((year (match-string 1 file-name))
+              (month (match-string 2 file-name))
+              (day (match-string 3 file-name)))
+          (format-time-string org-standup-title-format
+                              (apply 'encode-time
+                                     (parse-time-string
+                                      ; include time to ease time encoding
+                                      (format "%s-%s-%s 00:00" year month day)))))
+      (format-time-string org-standup-title-format))) )
 
 
 ;;;###autoload
@@ -123,12 +124,16 @@ date information, it will default to the current date."
 
 ;;;###autoload
 (defun org-standup-template-init ()
-  "Initialize the daily standup entry template."
+  "Initialize the daily standup entry template.
+
+This function defines an `auto-insert' template for daily standup
+entries. The template can be configured by customizing
+`org-standup-title-format' and/or `org-standup-questions'."
   (define-auto-insert
     `(,(format "%s/[0-9]*/[0-9]*/[0-9]*\\.org" (expand-file-name org-standup-dir)) . "Daily Journal")
     (nconc '("Daily Journal"
              (concat "#+TITLE: " (org-standup--title-generator) "\n\n"))
-           org-standup-questions) )
+           org-standup-questions))
   nil)
 
 
