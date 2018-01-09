@@ -43,7 +43,7 @@
 ;;  (add-hook 'after-init-hook
 ;;            (lambda ()
 ;;              ;; initialize the template
-;;              (eval-after-load 'autoinsert (org-standup-template-init))
+;;              (eval-after-load 'autoinsert #'org-standup-template-init)
 ;;
 ;;              ;; enable auto-insert
 ;;              (add-hook 'find-file-hook 'auto-insert)))
@@ -77,6 +77,15 @@ This value will be passed to `format-time-string'."
   :type 'list)
 
 
+(defcustom org-standup-max-lookup-distance 14
+  "The maximum number of days to lookup for an entry.
+
+This is used by the navigation functions when trying to locate
+the next/previous entry."
+  :group 'org-standup
+  :type 'integer)
+
+
 (defun org-standup--title-generator ()
   "Generate a title for a daily standup entry.
 
@@ -98,6 +107,66 @@ date information, it will default to the current date."
                                       ; include time to ease time encoding
                                       (format "%s-%s-%s 00:00" year month day)))))
       (format-time-string org-standup-title-format))) )
+
+
+(defun org-standup--get-title ()
+  "Return the title of the currrent org buffer."
+  (interactive)
+  (let ((title (plist-get (org-export-get-environment) ':title)))
+    (when title
+      (car title))))
+
+
+(defun org-standup-find-adjacent-entry (&optional distance direction)
+  "Find adjacent entry.
+
+The optional parameter DISTANCE is an integer that represents the
+maximum number of days to search for an adjacent entry. If called
+interactively, a numeric prefix argument specifies DISTANCE. If
+DISTANCE is nil, it will default to the value of
+`org-standup-max-lookup-distance'.
+
+The optional parameter DIRECTION is a symbol that represents the
+direction to search. It's value should be 'inc (for searching
+forward) or 'dec (for searching backwards). If DIRECTION is nil,
+it will default to 'inc."
+  (let ((current-entry-time (org-read-date nil t (org-standup--get-title)))
+        (count 0)
+        (max-distance (or distance org-standup-max-lookup-distance))
+        (entry-found-p nil))
+    (while (and (not entry-found-p)
+                (< count max-distance))
+      (setq count (1+ count))
+      (let* ((entry-time
+              (org-read-date nil t (format "%s%dd" (cond ((eq 'dec direction) "--") (t "++")) count) nil current-entry-time))
+             (entry-filename (concat org-standup-dir (format-time-string "/%Y/%m/%d.org" entry-time))))
+        (when (file-exists-p entry-filename)
+          (setq entry-found-p t)
+          (find-file entry-filename))))) )
+
+
+(defun org-standup-previous-entry (&optional distance)
+  "In selected window switch to previous entry.
+
+The optional parameter DISTANCE is an integer that represents the
+maximum number of days to search for an adjacent entry. If called
+interactively, a numeric prefix argument specifies DISTANCE. If
+DISTANCE is nil, it will default to the value of
+`org-standup-max-lookup-distance'."
+  (interactive "P")
+  (org-standup-find-adjacent-entry distance 'dec))
+
+
+(defun org-standup-next-entry (&optional distance)
+  "In selected window switch to next entery.
+
+The optional parameter DISTANCE is an integer that represents the
+maximum number of days to search for an adjacent entry. If called
+interactively, a numeric prefix argument specifies DISTANCE. If
+DISTANCE is nil, it will default to the value of
+`org-standup-max-lookup-distance'."
+  (interactive "P")
+  (org-standup-find-adjacent-entry distance))
 
 
 ;;;###autoload
@@ -133,8 +202,7 @@ entries. The template can be configured by customizing
     `(,(format "%s/[0-9]*/[0-9]*/[0-9]*\\.org" (expand-file-name org-standup-dir)) . "Daily Journal")
     (nconc '("Daily Journal"
              (concat "#+TITLE: " (org-standup--title-generator) "\n\n"))
-           org-standup-questions))
-  nil)
+           org-standup-questions)))
 
 
 (provide 'org-standup)

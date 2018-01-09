@@ -33,17 +33,23 @@ your Emacs configuration:
 (add-hook 'after-init-hook
           (lambda ()
             ;; initialize the template
-            (eval-after-load 'autoinsert (org-standup-template-init))
+            (eval-after-load 'autoinsert #'org-standup-template-init)
 
             ;; enable auto-insert
             (add-hook 'find-file-hook 'auto-insert)))
 ```
 
+You can configure the daily entry template by customizing the following variables:
+
+* `org-standup-title-format`
+
+* `org-standup-questions`
+
 
 ### Navigation
 
-There are three convienience functions for opening daily standup entries:
-`org-standup-today`, `org-standup-yesterday`, and `org-standup-tomorrow`.
+There are three commands for opening daily standup entries: `org-standup-today`,
+`org-standup-yesterday`, and `org-standup-tomorrow`.
 
 
 > *NOTE*: `org-standup-today` is autoloaded, so you can bind it to a global key
@@ -52,6 +58,9 @@ There are three convienience functions for opening daily standup entries:
 > ```elisp
 > (define-key global-map (kbd "C-c s") 'org-standup-today)
 > ```
+
+There is also a pair of commands for finding the nearest adjacent entry to the
+current entry: `org-standup-previous-entry` and `org-standup-next-entry`.
 
 
 ## License
