@@ -4,6 +4,7 @@
 
 ;; Author: hg-jt <hg-jt@users.noreply.github.com>
 ;; Version: 0.2
+;; Package-Requires: ((emacs "24"))
 
 ;; This file is not part of GNU Emacs.
 
@@ -49,6 +50,9 @@
 ;;              (add-hook 'find-file-hook 'auto-insert)))
 
 ;;; Code:
+(require 'ox)
+
+
 (defgroup org-standup nil
   "Options for managing daily standup notes."
   :group 'tools)
