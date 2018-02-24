@@ -70,7 +70,8 @@ This value will be passed to `format-time-string'."
 
 (defcustom org-standup-questions
   '("* What was accomplished yesterday?\n\n\n"
-    "* What is your focus today?\n\n\n"
+    "* What is your focus today?\n\n"
+    "- " _ "\n\n\n"
     "* What are you impediments/obstacles?\n\n")
   "A list of questions to include in the daily standup entry."
   :group 'org-standup
